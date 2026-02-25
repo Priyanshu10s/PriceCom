@@ -1,0 +1,386 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+
+:root {
+    --primary-bg: #0D0D0D;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    /* Translucent White for Glassmorphism */
+    --accent-color: #00D1FF;
+    /* Cyan/Electric Blue */
+    --secondary-color: #007BFF;
+    --text-main: #FFFFFF;
+    --text-sec: #A0A0A0;
+    --error-color: #FF0055;
+    --success-color: #00FF99;
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --input-bg: rgba(255, 255, 255, 0.07);
+    --transition-speed: 0.3s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    /* Hide scrollbars if unwanted */
+}
+
+/* Background Video */
+.bg-video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+#bg-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 13, 13, 0.85);
+    /* Darken video */
+    backdrop-filter: blur(8px) brightness(0.6);
+    /* Blur effect */
+    z-index: -1;
+}
+
+/* Glassmorphism Card */
+.auth-container {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Floating Elements (Micro-Images/Logos) */
+.floating-element {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(0, 209, 255, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+}
+
+.float-1 {
+    top: -20px;
+    left: -20px;
+    animation-delay: 0s;
+}
+
+.float-2 {
+    bottom: -30px;
+    right: -10px;
+    animation-delay: 2s;
+    width: 100px;
+    height: 100px;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(10px, -15px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+/* Branding */
+.brand-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.brand-logo {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 5px var(--accent-color));
+}
+
+.brand-header h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.brand-header p {
+    color: var(--text-sec);
+    font-size: 0.9rem;
+}
+
+/* Social Auth Styles */
+.social-auth {
+    margin-top: 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+}
+
+.social-auth p {
+    color: var(--text-sec);
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.social-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-social {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9em;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.btn-social:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.btn-google {
+    background: #DB4437;
+}
+
+.btn-github {
+    background: #333;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    background: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 1rem;
+    transition: all var(--transition-speed);
+    outline: none;
+}
+
+.form-control:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 209, 255, 0.3);
+    /* Glow Effect */
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.form-label {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-sec);
+    pointer-events: none;
+    transition: 0.3s ease all;
+    background: transparent;
+    padding: 0 5px;
+    font-size: 1rem;
+}
+
+/* Animated Placeholders logic via :focus or value present */
+.form-control:focus+.form-label,
+.form-control:not(:placeholder-shown)+.form-label {
+    top: 0;
+    transform: translateY(-50%) scale(0.9);
+    background: var(--primary-bg);
+    /* Or transparent if needed, but bg obscures border */
+    background: #1a1a1a;
+    /* Match vaguely or use opaque text shadow/bg trick */
+    color: var(--accent-color);
+    font-weight: 600;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+/* Custom Buttons */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 5px 20px rgba(0, 209, 255, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Links */
+.auth-links {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-sec);
+    position: relative;
+    z-index: 1;
+}
+
+.auth-links a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 5px;
+    transition: color 0.2s;
+}
+
+.auth-links a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Feature Highlights (Register Page) */
+.feature-highlights {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.feature-item {
+    text-align: center;
+    color: var(--text-sec);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.feature-item i {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.feature-item span {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Visual Feedback Alerts */
+.alert-box {
+    padding: 12px;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-error {
+    background: rgba(255, 0, 85, 0.1);
+    border: 1px solid var(--error-color);
+    color: #ffcccc;
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+}
+
+.alert-success {
+    background: rgba(0, 255, 153, 0.1);
+    border: 1px solid var(--success-color);
+    color: #ccffdd;
+    box-shadow: 0 0 10px rgba(0, 255, 153, 0.2);
+}

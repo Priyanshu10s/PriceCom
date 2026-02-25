@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(90deg, #bc13fe 0%, #00f3ff 100%);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00f3ff;
+        }
+
+        .price-drop {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+
+        .old-price {
+            font-size: 18px;
+            color: #888;
+            text-decoration: line-through;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: #00f3ff;
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 30px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Price Drop Alert</h1>
+        </div>
+        <div class="content">
+            <p style="color: #ccc; text-transform: uppercase; letter-spacing: 1px;">Target Acquired</p>
+            <div class="product-name">{{ product_name }}</div>
+
+            <div class="old-price">Target: ₹{{ target_price }}</div>
+            <div class="price-drop">₹{{ current_price }}</div>
+
+            <p style="color: #aaa; margin-bottom: 30px;">The asset has reached your buy zone. Secure it now before
+                volatility spikes.</p>
+
+            <a href="{{ product_url }}" class="cta-btn">Buy Now</a>
+        </div>
+        <div class="footer">
+            &copy; 2024 PriceCom Antigravity Systems. <br>
+            <a href="#" style="color: #666; text-decoration: none;">Unsubscribe</a> from these alerts.
+        </div>
+    </div>
+</body>
+
+</html>

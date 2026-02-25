@@ -1,0 +1,722 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% load freshness_filters %}
+
+{% block title %}Enterprise Analytics | PriceCom{% endblock %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    deepNavy: '#050505',
+                    panelBg: '#111111',
+                    neonPurple: '#bc13fe',
+                    electricCyan: '#00f3ff',
+                    successGreen: '#00ff9d',
+                },
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+            }
+        }
+    }
+</script>
+
+<style>
+    body {
+        background-color: #050505;
+        color: #e5e7eb;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Backdrop Filter Logic: Applies 12px blur and thin white border for premium glassmorphism */
+    .glass-sidebar {
+        background: rgba(17, 17, 17, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        border-radius: 1rem;
+    }
+
+    /* Force Logic: Cyberpunk Hover States */
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px -10px rgba(0, 243, 255, 0.15);
+        border-color: rgba(0, 243, 255, 0.3);
+    }
+
+    .glass-card-best {
+        border-color: #00ff9d;
+        box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+    }
+
+    .nav-item {
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+        background: rgba(255, 255, 255, 0.05);
+        color: #00f3ff;
+        border-left-color: #00f3ff;
+    }
+
+    .stat-value {
+        background: linear-gradient(to right, #00f3ff, #bc13fe);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Live Pulse Animation (Cybersecurity & UX) */
+    @keyframes pulse-ring {
+        0% {
+            transform: scale(0.33);
+            opacity: 0;
+        }
+
+        80%,
+        100% {
+            opacity: 0;
+        }
+    }
+
+    @keyframes pulse-dot {
+        0% {
+            transform: scale(0.8);
+        }
+
+        50% {
+            transform: scale(1);
+        }
+
+        100% {
+            transform: scale(0.8);
+        }
+    }
+
+    .pulse-dot {
+        position: relative;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    /* Expanding Ring Effect */
+    .pulse-dot::before {
+        content: '';
+        position: absolute;
+        display: block;
+        width: 300%;
+        height: 300%;
+        box-sizing: border-box;
+        margin-left: -100%;
+        margin-top: -100%;
+        border-radius: 50%;
+        background-color: inherit;
+        opacity: 0.4;
+        animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    /* Core Dot Animation */
+    .pulse-dot::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: inherit;
+        border-radius: 50%;
+        animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
+    }
+
+    /* Force Logic: Dynamic colors for status */
+    .status-live {
+        background-color: #22c55e;
+    }
+
+    /* Green: < 1hr */
+    .status-delayed {
+        background-color: #eab308;
+    }
+
+    /* Yellow: < 24hr */
+    .status-stale {
+        background-color: #ef4444;
+    }
+
+    /* Red: > 24hr */
+
+    /* Disable Pulse for Delayed/Stale to reduce noise */
+    .status-stale::after {
+        animation: none;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 48px;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    /* Decision Pulse Animations */
+    @keyframes pulse-wait {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .badge-wait {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        color: #ef4444;
+        animation: pulse-wait 2s infinite;
+        backdrop-filter: blur(8px);
+    }
+
+    @keyframes pulse-buy {
+        0%, 100% { opacity: 1; text-shadow: 0 0 8px #00ff9d, 0 0 20px #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.2); }
+        50% { opacity: 0.8; text-shadow: 0 0 4px #00ff9d; box-shadow: 0 0 5px rgba(0, 255, 157, 0.1); }
+    }
+    .badge-buy {
+        background: rgba(0, 255, 157, 0.1);
+        border: 1px solid #00ff9d;
+        color: #00ff9d;
+        animation: pulse-buy 1.5s infinite alternate;
+        backdrop-filter: blur(8px);
+    }
+    
+    .badge-stable {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #9ca3af;
+        backdrop-filter: blur(8px);
+    }
+    
+    @keyframes flicker-shield {
+        0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8)); }
+        20%, 24%, 55% { opacity: 0.4; filter: none; }
+    }
+    .shield-risk { color: #ef4444; animation: flicker-shield 3s infinite; cursor: pointer; }
+    .shield-caution { color: #f59e0b; filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); cursor: pointer; }
+    .shield-verified { color: #10b981; filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5)); cursor: pointer; }
+</style>
+
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 glass-sidebar hidden md:flex flex-col h-full fixed md:relative z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-800">
+            <span class="text-2xl font-bold tracking-tighter text-white">PRICE<span
+                    class="text-electricCyan">COM</span></span>
+            <span
+                class="ml-2 px-2 py-0.5 text-[10px] bg-electricCyan/20 text-electricCyan rounded-full border border-electricCyan/50 font-mono tracking-widest">PRO</span>
+        </div>
+
+        <nav class="flex-1 py-6 space-y-2">
+            <a href="#" class="nav-item active flex items-center px-6 py-3 text-gray-300">
+                <i class="fas fa-th-large w-6"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="#" class="nav-item flex items-center px-6 py-3 text-gray-300">
+                <i class="fas fa-chart-network w-6"></i>
+                <span class="font-medium">Matrix</span>
+            </a>
+            <a href="#" class="nav-item flex items-center px-6 py-3 text-gray-300">
+                <i class="fas fa-eye w-6"></i>
+                <span class="font-medium">Watchlist</span>
+            </a>
+            <a href="#" class="nav-item flex items-center px-6 py-3 text-gray-300">
+                <i class="fas fa-bell w-6"></i>
+                <span class="font-medium">Alerts</span>
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-gray-800">
+            <a href="{% url 'account_logout' %}"
+                class="flex items-center text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-sign-out-alt w-6"></i>
+                <span>Disconnect</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto relative z-10 p-4 md:p-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-1 tracking-tight">Analytics Hub</h1>
+                <p class="text-gray-400 text-sm font-mono"><i
+                        class="fas fa-terminal text-electricCyan mr-2"></i>SYS.INIT.USER // {{
+                    user.username|default:user.email }}</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div
+                    class="bg-gray-800/50 backdrop-blur rounded-lg px-4 py-2 text-xs text-gray-400 border border-gray-700/50 flex flex-col items-end">
+                    <span class="uppercase tracking-widest opacity-60 text-[10px]">Sentiment</span>
+                    <span
+                        class="{% if market_sentiment == 'Great Time to Buy' %}text-successGreen{% else %}text-electricCyan{% endif %} font-bold tracking-wide">{{
+                        market_sentiment|default:"NEUTRAL" }}</span>
+                </div>
+                <div
+                    class="h-10 w-10 rounded-full bg-gradient-to-tr from-electricCyan to-neonPurple flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(0,243,255,0.4)] ring-2 ring-white/10">
+                    {{ user.email|first|upper }}
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Cyber-Wallet Widget -->
+            <div class="glass-card p-6 relative overflow-hidden group">
+                <div
+                    class="absolute -right-6 -top-6 text-white/5 group-hover:text-electricCyan/5 transition-colors transform rotate-12">
+                    <i class="fas fa-wallet text-8xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-gray-400 text-xs font-mono uppercase tracking-widest mb-2">Ledger Balance</p>
+                    <h3 class="text-3xl font-bold stat-value mt-1">₹{{ wallet_balance|default:"0.00"|intcomma }}</h3>
+                    <div class="mt-4 flex items-center justify-between text-xs text-gray-500">
+                        <span class="text-successGreen"><i class="fas fa-shield-check mr-1"></i>Secured</span>
+                        <a href="#" class="text-electricCyan hover:underline">Top Up</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Tracked -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-gray-400 text-xs font-mono uppercase tracking-widest">Active Trackers</p>
+                        <h3 class="text-3xl font-bold text-white mt-1">{{ total_tracked|default:"0" }}</h3>
+                    </div>
+                    <div class="p-3 rounded-xl bg-cyan-500/10 text-electricCyan border border-cyan-500/20">
+                        <i class="fas fa-radar text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 font-mono">
+                    Avg Trend: <span
+                        class="{% if avg_price_drop < 0 %}text-successGreen{% else %}text-red-400{% endif %} font-bold">{{
+                        avg_price_drop|default:"0" }}%</span>
+                </div>
+            </div>
+
+            <!-- Potential Savings -->
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-gray-400 text-xs font-mono uppercase tracking-widest">Aero Savings</p>
+                        <h3 class="text-3xl font-bold text-white mt-1">₹{{ potential_savings|default:"0"|intcomma }}
+                        </h3>
+                    </div>
+                    <div class="p-3 rounded-xl bg-green-500/10 text-successGreen border border-green-500/20">
+                        <i class="fas fa-coins text-xl"></i>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 font-mono">
+                    <span class="text-successGreen"><i class="fas fa-arrow-trend-up"></i> Optima</span>
+                </div>
+            </div>
+
+            <!-- Predictive Wait/Buy Widget -->
+            <div class="glass-card p-6 flex flex-col justify-between group" id="predictive-widget">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-gray-400 text-xs font-mono uppercase tracking-widest">Signal Engine 
+                        <i class="fas fa-info-circle ml-1 text-gray-500 hover:text-white cursor-help" title="Based on Volatility & ML Prediction"></i>
+                    </p>
+                    <div class="pulse-dot status-live"></div>
+                </div>
+                <div class="flex items-center justify-center py-2 h-full">
+                    <!-- Wait or Buy status indicator driven by Global Context -->
+                    <div class="text-center w-full">
+                        {% if global_fomo_message %}
+                            <p class="text-[10px] text-electricCyan mb-2 font-bold animate-pulse">{{ global_fomo_message }}</p>
+                        {% else %}
+                            <p class="text-xs text-gray-500 mb-2">NETWORK CONSENSUS</p>
+                        {% endif %}
+                        
+                        <!-- Fallback visual if no specific global product is highlighted -->
+                        <div class="inline-flex items-center px-4 py-2 w-full justify-center badge-stable rounded-md">
+                            <span class="font-bold tracking-widest text-xs uppercase"><i class="fas fa-chart-bar mr-2"></i>MARKET STABLE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content Area -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Comparison Matrix Grid -->
+                <section>
+                    <h2 class="text-xl font-bold text-white mb-6 flex items-center font-mono">
+                        <i class="fas fa-compress-alt text-neonPurple mr-3"></i> Comparison Matrix
+                    </h2>
+                    <div class="overflow-x-auto rounded-xl border border-white/5 bg-panelBg/50 backdrop-blur">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-white/5 border-b border-white/10 text-xs font-mono text-gray-400 uppercase tracking-wider">
+                                    <th class="p-4">SKU / Item</th>
+                                    <th class="p-4">Store A</th>
+                                    <th class="p-4">Store B</th>
+                                    <th class="p-4 w-32">Market Trend</th>
+                                    <th class="p-4 text-right">Verdict</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for group in comparison_matrix|default:"" %}
+                                <tr
+                                    class="border-b border-white/5 hover:bg-white/5 transition-colors group {% if group.is_best_deal %}glass-card-best{% endif %}">
+                                    <td class="p-4">
+                                        <div class="font-medium text-gray-200">{{ group.name }}</div>
+                                        <div class="text-xs text-gray-500 font-mono mt-1">{{ group.category }}</div>
+                                        {% if group.fomo_savings_message %}
+                                        <div class="text-[10px] text-electricCyan mt-1 font-bold">{{ group.fomo_savings_message }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="p-4 text-gray-300">₹{{ group.price_a|intcomma }}</td>
+                                    <td class="p-4 text-gray-300">₹{{ group.price_b|intcomma }}</td>
+                                    <td class="p-4">
+                                        <!-- Matrix Sparkline Column -->
+                                        <div class="h-8 w-24">
+                                            {% if group.price_history_str %}
+                                            <canvas class="cyber-sparkline" data-prices="[{{ group.price_history_str }}]"></canvas>
+                                            {% else %}
+                                            <span class="text-[10px] text-gray-600">NO DATA</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <span
+                                            class="px-2 py-1 rounded text-xs font-bold {% if group.verdict == 'Store A' %}bg-electricCyan/10 text-electricCyan border border-electricCyan/20{% else %}bg-purple-500/10 text-neonPurple border border-purple-500/20{% endif %}">
+                                            {{ group.verdict }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-gray-500 font-mono text-sm">
+                                        NO MATRIX DATA FOUND // AWAITING SYNC
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Top Discounts (Sparklines UI) -->
+                <section>
+                    <h2 class="text-xl font-bold text-white mb-6 flex items-center font-mono">
+                        <i class="fas fa-chart-line text-electricCyan mr-3"></i> Top Discovered Deals
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for product in top_discounts %}
+                        <div class="glass-card p-5 group flex flex-col justify-between relative">
+                            <!-- Trust Shield Icon Indicator -->
+                            {% if product.metadata.badge_level %}
+                            <div class="absolute top-4 right-4 z-10" title="{{ product.metadata.badge_label }}">
+                                <i class="fas fa-shield-alt text-2xl {% if product.metadata.badge_level == 'Red' %}shield-risk{% elif product.metadata.badge_level == 'Yellow' %}shield-caution{% else %}shield-verified{% endif %}"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1 pr-12">
+                                    <a href="{% if product.slug %}/product/{{ product.slug }}/{% else %}#{% endif %}"
+                                        class="inline-block">
+                                        <h3 class="font-semibold text-white group-hover:text-electricCyan transition-colors leading-tight line-clamp-2"
+                                            title="{{ product.name }}">{{ product.name }}</h3>
+                                    </a>
+                                    <p class="text-xs text-gray-500 font-mono mt-2">{{ product.brand_name|default:"UNKNOWN" }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Decision Intelligence Badge -->
+                            <div class="mt-3 relative w-full pr-12 group/tooltip">
+                                {% if product.metadata.signal == 'WAIT' %}
+                                    <div class="inline-flex items-center px-3 py-1 text-xs font-bold badge-wait rounded w-full justify-center">
+                                        <i class="fas fa-hand-paper mr-2"></i>Hold on! AI predicts ₹{{ product.metadata.predicted_drop_pct|floatformat:1 }}% drop.
+                                    </div>
+                                    <!-- Smart Tooltip -->
+                                    <div class="absolute inset-0 bg-black/90 text-white text-[10px] p-2 rounded opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-20 flex flex-col justify-center border border-red-500/50">
+                                        <span class="font-bold text-red-400">Volatility Score: {{ product.metadata.volatility_score|default:"N/A" }}</span>
+                                        <span class="mt-1">{{ product.metadata.fomo_payload|default:"High variations detected recently." }}</span>
+                                    </div>
+                                {% elif product.metadata.signal == 'BUY' %}
+                                    <div class="inline-flex items-center px-3 py-1 text-xs font-bold badge-buy rounded w-full justify-center">
+                                        <i class="fas fa-bolt mr-2"></i>Grab it! {{ product.metadata.confidence|floatformat:0 }}% Confidence.
+                                    </div>
+                                {% else %}
+                                    <div class="inline-flex items-center px-3 py-1 text-xs font-bold badge-stable rounded w-full justify-center">
+                                        <i class="fas fa-balance-scale mr-2"></i>Market Stable
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Stealth Sparkline Chart -->
+                            <div class="chart-container mt-4 mb-2">
+                                {% if product.price_list_str %}
+                                <canvas class="cyber-sparkline" data-prices="[{{ product.price_list_str }}]"></canvas>
+                                {% else %}
+                                <div
+                                    class="w-full h-full border border-dashed border-white/10 rounded-md flex items-center justify-center text-gray-600 text-[10px] font-mono">
+                                    NO DATA</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-2 flex justify-between items-end">
+                                <button class="px-3 py-1 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-xs border border-white/10 group-hover:border-electricCyan/50 transition-colors">
+                                    <i class="fas fa-eye mr-1"></i> Watch
+                                </button>
+                                <div class="flex justify-end items-baseline space-x-2">
+                                    {% if product.base_price %}
+                                    <span class="text-xs text-red-400/60 line-through">₹{{ product.base_price|intcomma
+                                        }}</span>
+                                    {% endif %}
+                                    <!-- Buy Now Button with JS Interceptor attributes -->
+                                    <a href="#" data-risk-level="{{ product.metadata.badge_level|default:'Green' }}" class="buy-now-btn text-2xl font-bold text-white tracking-tight hover:text-successGreen transition-colors flex items-center">
+                                        ₹{{ product.current_lowest_price|default:"0"|intcomma }} <i class="fas fa-external-link-alt text-[10px] ml-1 opacity-50"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-span-full border border-dashed border-white/10 rounded-xl p-8 text-center">
+                            <i class="fas fa-ghost text-4xl text-gray-600 mb-4 block"></i>
+                            <p class="text-gray-500 font-mono text-sm">SCANNING FREQUENCIES // NO DEALS DETECTED</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Sidebar: Price Watchlist & System -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Watchlist -->
+                <div class="glass-card p-6 sticky top-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-white font-mono uppercase tracking-wider text-sm"><i
+                                class="fas fa-crosshairs text-purple-400 mr-2"></i> Active Watchlist</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for item in watchlist_items|slice:":5" %}
+                        <div class="flex items-center justify-between border-b border-white/5 pb-3 group">
+                            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                                <div class="w-10 h-6 relative shrink-0">
+                                    {% if item.product.price_list_str %}
+                                    <canvas class="cyber-sparkline"
+                                        data-prices="[{{ item.product.price_list_str }}]"></canvas>
+                                    {% else %}
+                                    <div class="w-full h-full bg-white/5 rounded"></div>
+                                    {% endif %}
+                                </div>
+                                <div class="truncate flex-1">
+                                    <p
+                                        class="text-[13px] text-gray-300 truncate w-full group-hover:text-electricCyan transition-colors">
+                                        {{ item.product.name }}</p>
+                                    <p class="text-[10px] text-gray-500 font-mono mt-0.5">TGT: ₹{{
+                                        item.target_price|intcomma }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right pl-2 shrink-0">
+                                <p class="text-sm font-bold text-white">₹{{
+                                    item.product.current_lowest_price|default:"0"|intcomma }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-6 bg-black/20 rounded-lg border border-white/5">
+                            <i class="fas fa-eye-slash text-gray-600 text-2xl mb-2"></i>
+                            <p class="text-xs text-gray-500 font-mono">WATCHLIST EMPTY</p>
+                        </div>
+                        <button
+                            class="w-full mt-4 py-2 rounded border border-electricCyan/30 bg-electricCyan/5 text-electricCyan text-xs font-mono uppercase tracking-wider hover:bg-electricCyan/20 transition-all font-bold group">
+                            <i class="fas fa-plus mr-1 group-hover:rotate-90 transition-transform"></i> Add Target
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- System Status Widget -->
+                    <div class="mt-8 pt-6 border-t border-white/10">
+                        <h4 class="text-[10px] font-bold text-gray-500 font-mono uppercase tracking-widest mb-4">
+                            Diagnostics</h4>
+                        <div class="space-y-3">
+                            <div
+                                class="flex items-center justify-between text-xs font-mono text-gray-400 bg-black/20 p-2 rounded border border-white/5">
+                                <span>Spider Engine</span>
+                                <span class="text-successGreen flex items-center font-bold">
+                                    <span
+                                        class="w-1.5 h-1.5 bg-successGreen rounded-full mr-2 shadow-[0_0_5px_#00ff9d]"></span>
+                                    ONLINE
+                                </span>
+                            </div>
+                            <div
+                                class="flex items-center justify-between text-xs font-mono text-gray-400 bg-black/20 p-2 rounded border border-white/5">
+                                <span>DB Sync Delay</span>
+                                <span class="text-electricCyan">24ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Chart.js Engine for High-Performance Stealth Sparklines -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Self-Performing: Automatically initialize all .cyber-sparkline canvases
+        const charts = document.querySelectorAll('.cyber-sparkline');
+
+        charts.forEach((canvas) => {
+            const ctx = canvas.getContext('2d');
+            let rawData = [];
+            try {
+                // Robust parsing of JSON prices
+                rawData = JSON.parse(canvas.getAttribute('data-prices') || '[]');
+            } catch (e) {
+                console.error("Sparkline parsing error:", e);
+                return;
+            }
+
+            if (!rawData.length || rawData.length < 2) return;
+
+            // Chart.js Configuration for Stealth Aesthetics
+            // Focus on performance and minimalism
+            const firstPrice = rawData[0];
+            const lastPrice = rawData[rawData.length - 1];
+
+            // Dynamic Sparkline Coloring & Force Logic
+            // Green if price dropped/same, Red if rose
+            const isDrop = lastPrice <= firstPrice;
+            const lineColor = isDrop ? '#00ff9d' : '#ef4444'; // successGreen / danger red
+
+            // Premium Linear Gradient Effect to transparent
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.parentElement.offsetHeight || 50);
+            gradient.addColorStop(0, isDrop ? 'rgba(0, 255, 157, 0.25)' : 'rgba(239, 68, 68, 0.25)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            // Optimize by disabling everything except the line and fill
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: rawData.map((_, i) => i), // Required for Chart.js x-axis progression
+                    datasets: [{
+                        data: rawData,
+                        borderColor: lineColor,
+                        borderWidth: 1.5,
+                        backgroundColor: gradient,
+                        fill: true,
+                        pointRadius: 0,       // Stealth: Hide points completely
+                        pointHoverRadius: 0,
+                        tension: 0.4          // Force Logic: Smooth cubic bezier curves
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        x: { display: false }, // Completely hide axes
+                        y: {
+                            display: false,
+                            // Add slight vertical padding within chart
+                            suggestedMin: Math.min(...rawData) * 0.99,
+                            suggestedMax: Math.max(...rawData) * 1.01
+                        }
+                    },
+                    layout: { padding: 0 },
+                    animation: false, // Instant visual rendering for perceived performance speed
+                    interaction: { mode: null } // Disable hover overhead
+                }
+            });
+        });
+
+        // The High-Risk Interceptor Logic
+        const buyButtons = document.querySelectorAll('.buy-now-btn');
+        const modal = document.getElementById('risk-warning-modal');
+        const proceedBtn = document.getElementById('modal-proceed-btn');
+        const backBtn = document.getElementById('modal-back-btn');
+        let pendingHref = null;
+
+        buyButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const riskLevel = this.getAttribute('data-risk-level');
+                if (riskLevel === 'Red') {
+                    e.preventDefault(); // Intercept!
+                    pendingHref = this.getAttribute('href');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+            });
+        });
+
+        if(proceedBtn) {
+            proceedBtn.addEventListener('click', function() {
+                if(pendingHref && pendingHref !== '#') {
+                    window.open(pendingHref, '_blank');
+                }
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+        }
+
+        if(backBtn) {
+            backBtn.addEventListener('click', function() {
+                pendingHref = null;
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+        }
+    });
+</script>
+
+<!-- Cyber-Industrial Warning Modal -->
+<div id="risk-warning-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-[16px]">
+    <div class="bg-[#111] border border-red-500/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-[0_0_50px_rgba(239,68,68,0.15)] relative overflow-hidden">
+        <!-- Danger Stripes Background Element -->
+        <div class="absolute top-0 left-0 w-full h-2 bg-[repeating-linear-gradient(45deg,#ef4444,#ef4444_10px,#000_10px,#000_20px)] opacity-50"></div>
+        
+        <div class="flex flex-col items-center text-center mt-4">
+            <div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                <i class="fas fa-exclamation-triangle text-3xl"></i>
+            </div>
+            
+            <h2 class="text-xl font-bold text-white mb-2 tracking-tight">High Risk Anomaly Detected</h2>
+            <p class="text-sm text-gray-400 mb-8 border-b border-white/5 pb-6">
+                Warning: This listing shows signs of a severe price anomaly or seller risk. Proceeding may result in a non-genuine transaction.
+            </p>
+            
+            <div class="flex w-full space-x-4">
+                <button id="modal-back-btn" class="flex-1 py-3 rounded-md bg-white/5 text-white font-bold hover:bg-white/10 transition-colors">
+                    Go Back
+                </button>
+                <button id="modal-proceed-btn" class="flex-1 py-3 rounded-md bg-red-500/20 text-red-500 border border-red-500/50 font-bold hover:bg-red-500/40 transition-colors">
+                    Proceed Anyway
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

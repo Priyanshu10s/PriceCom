@@ -1,0 +1,32 @@
+<div class="row">
+    {% for item in results %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if item.image %}
+            <img src="{{ item.image }}" class="card-img-top p-3" alt="{{ item.name }}"
+                style="height: 200px; object-fit: contain;">
+            {% else %}
+            <img src="https://via.placeholder.com/200" class="card-img-top p-3" alt="No Image"
+                style="height: 200px; object-fit: contain;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title text-truncate">{{ item.name }}</h5>
+                <p class="card-text">
+                    <span
+                        class="badge bg-{% if item.store == 'Amazon' %}warning text-dark{% else %}primary{% endif %}">{{
+                        item.store }}</span>
+                    <strong class="fs-4">₹{{ item.price }}</strong>
+                </p>
+                <a href="{{ item.url }}" target="_blank" class="btn btn-outline-dark w-100">View Deal</a>
+            </div>
+            <div class="card-footer text-muted">
+                <small>Last updated: {{ item.last_updated|timesince }} ago</small>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No results found in database. Searching live...</div>
+    </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,17 @@
+# --- Security: The Vault ---
+.env
+.env.production
+
+# --- Python: Bytecode & Cache ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- DB: Local Setup ---
+db.sqlite3
+*.log
+
+# --- OS: Metadata ---
+.DS_Store
+Thumbs.db

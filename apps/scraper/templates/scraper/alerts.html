@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}My Price Alerts | PriceCom{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen pt-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+    <!-- Vanta Background (Reused) -->
+    <div id="vanta-alerts" class="fixed inset-0 z-[-1]"></div>
+
+    <div class="w-full max-w-7xl">
+        <h1
+            class="text-4xl md:text-5xl font-[800] mb-8 text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonPurple drop-shadow-[0_0_10px_rgba(0,243,255,0.5)]">
+            ACTIVE ALERTS
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for alert in alerts %}
+            <div class="glass-panel p-6 rounded-3xl relative hover:border-neonPurple transition-all duration-300 group">
+                <div class="absolute -top-3 -right-3">
+                    {% if alert.is_triggered %}
+                    <span
+                        class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">TRIGGERED</span>
+                    {% else %}
+                    <span
+                        class="bg-electricCyan text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg">ACTIVE</span>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold text-gray-100 line-clamp-2 mb-2">{{ alert.product_url|slice:":50" }}...
+                    </h3>
+                    <p class="text-xs text-gray-500 font-mono">{{ alert.created_at|date:"M d, Y" }}</p>
+                </div>
+
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase tracking-wider">Target Price</p>
+                        <p class="text-2xl font-bold text-electricCyan">₹{{ alert.target_price }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400 text-xs uppercase tracking-wider">Current</p>
+                        <p class="text-xl font-bold text-white">
+                            {% if alert.current_price %}₹{{ alert.current_price }}{% else %}--{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <a href="{{ alert.product_url }}" target="_blank"
+                        class="flex-1 bg-white/10 hover:bg-white/20 text-white text-center py-2 rounded-xl font-bold text-sm transition-all">
+                        VISIT
+                    </a>
+                    <!-- Future: Edit/Delete Alert -->
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full glass-panel p-12 text-center rounded-3xl">
+                <i class="fas fa-bell-slash text-6xl text-gray-600 mb-6"></i>
+                <h2 class="text-2xl font-bold text-gray-400">No Active Alerts</h2>
+                <p class="text-gray-500 mb-8">Set price targets on products to see them here.</p>
+                <a href="{% url 'scraper:search' %}"
+                    class="magnetic-btn inline-block bg-electricCyan text-black px-8 py-3 rounded-xl font-bold">START
+                    TRACKING</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Vanta Script for Alerts Page -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof VANTA !== 'undefined') {
+            VANTA.NET({
+                el: "#vanta-alerts",
+                mouseControls: true, touchControls: true, gyroControls: false,
+                minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00,
+                color: 0xbc13fe, backgroundColor: 0x050505, points: 10.00, maxDistance: 20.00, spacing: 16.00, showDots: true
+            });
+        }
+    });
+</script>
+{% endblock %}
